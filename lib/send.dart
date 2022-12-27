@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:isproject/DES/random_string.dart';
 
 import 'DES/des.dart';
 import 'appbar.dart';
@@ -33,7 +34,7 @@ class _SendScreenState extends State<SendScreen> {
             children: [
               TextField(
                 decoration:
-                    const InputDecoration(hintText: 'Send unencrypted message'),
+                    const InputDecoration(hintText: 'Send Encrypted Message'),
                 onChanged: (value) => message = value,
               ),
               const SizedBox(height: 16),
@@ -42,9 +43,10 @@ class _SendScreenState extends State<SendScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: () async {
+                      RandomData rndData = RandomData();
                       if (is3DES) {
-                        String key = '123456781234567812345678'; // 24-byte
-                        List<int> iv = [1, 2, 3, 4, 5, 6, 7, 8];
+                        String key = rndData.getRandomString(24); // 24-byte
+                        List<int> iv = rndData.getRandomIntList(8);
                         List<int> encrypted;
                         print('key: $key');
                         print('message: $message');
@@ -57,8 +59,8 @@ class _SendScreenState extends State<SendScreen> {
                           '3DES-iv': iv,
                         });
                       } else {
-                        String key = '12345678'; // 8 byte
-                        List<int> iv = [1, 2, 3, 4, 5, 6, 7, 8];
+                        String key = rndData.getRandomString(8); // 8 byte
+                        List<int> iv = rndData.getRandomIntList(8);
                         List<int> encrypted;
                         print('key: $key');
                         print('message: $message');
