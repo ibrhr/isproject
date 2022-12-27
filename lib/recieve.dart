@@ -48,9 +48,7 @@ class RecieveScreen extends StatelessWidget {
           String DESkey = snapshot.data!['DES-Key'];
 
           DES desCBC = DES(
-              key: DESkey.codeUnits,
-              mode: DESMode.CBC,
-              iv: DESiv.cast<int>());
+              key: DESkey.codeUnits, mode: DESMode.CBC, iv: DESiv.cast<int>());
 
           List<int> DESdecrypted = desCBC.decrypt(DESencrypted.cast<int>());
 
