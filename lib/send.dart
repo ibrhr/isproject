@@ -13,15 +13,51 @@ class SendScreen extends StatefulWidget {
 }
 
 class _SendScreenState extends State<SendScreen> {
+  String? message;
   bool is3DES = true;
   String dropdownButtonValue = '3DES';
 
+  var firestoreDocument =
+      FirebaseFirestore.instance.collection('Message').doc('Message');
+
+  Future<void> send3DES(String message) async {
+    RandomData rndData = RandomData();
+    String key = rndData.getRandomString(24); // 24-byte
+    List<int> iv = rndData.getRandomIntList(8);
+    List<int> encrypted;
+
+    print('key: $key');
+    print('message: $message');
+
+    DES3 des3CBC = DES3(key: key.codeUnits, mode: DESMode.CBC, iv: iv);
+    encrypted = des3CBC.encrypt(message.codeUnits);
+
+    await firestoreDocument.update({
+      '3DES-Data': encrypted,
+      '3DES-Key': key,
+      '3DES-iv': iv,
+    });
+  }
+
+  Future<void> sendDES(String message) async {
+    RandomData rndData = RandomData();
+
+    String key = rndData.getRandomString(8); // 8 byte
+    List<int> iv = rndData.getRandomIntList(8);
+    List<int> encrypted;
+    print('key: $key');
+    print('message: $message');
+    DES desCBC = DES(key: key.codeUnits, mode: DESMode.CBC, iv: iv);
+    encrypted = desCBC.encrypt(message.codeUnits);
+    await firestoreDocument.update({
+      'DES-Data': encrypted,
+      'DES-Key': key,
+      'DES-iv': iv,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    String? message;
-    var firestoreDocument =
-        FirebaseFirestore.instance.collection('Message').doc('Message');
-
     return Scaffold(
       appBar: const MyAppBar(
         title: 'Send Screen',
@@ -43,35 +79,10 @@ class _SendScreenState extends State<SendScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: () async {
-                      RandomData rndData = RandomData();
                       if (is3DES) {
-                        String key = rndData.getRandomString(24); // 24-byte
-                        List<int> iv = rndData.getRandomIntList(8);
-                        List<int> encrypted;
-                        print('key: $key');
-                        print('message: $message');
-                        DES3 des3CBC =
-                            DES3(key: key.codeUnits, mode: DESMode.CBC, iv: iv);
-                        encrypted = des3CBC.encrypt(message!.codeUnits);
-                        await firestoreDocument.update({
-                          '3DES-Data': encrypted,
-                          '3DES-Key': key,
-                          '3DES-iv': iv,
-                        });
+                        await send3DES(message!);
                       } else {
-                        String key = rndData.getRandomString(8); // 8 byte
-                        List<int> iv = rndData.getRandomIntList(8);
-                        List<int> encrypted;
-                        print('key: $key');
-                        print('message: $message');
-                        DES desCBC =
-                            DES(key: key.codeUnits, mode: DESMode.CBC, iv: iv);
-                        encrypted = desCBC.encrypt(message!.codeUnits);
-                        await firestoreDocument.update({
-                          'DES-Data': encrypted,
-                          'DES-Key': key,
-                          'DES-iv': iv,
-                        });
+                        await sendDES(message!);
                       }
                     },
                     child: const Text('Send'),
